@@ -1,0 +1,27 @@
+[2024-06-04 17:16:13,787][flwr][INFO] - Starting Flower simulation, config: num_rounds=1, no round_timeout
+[2024-06-04 17:16:19,604][flwr][INFO] - Flower VCE: Ray initialized with resources: {'node:__internal_head__': 1.0, 'GPU': 1.0, 'memory': 2858395239.0, 'object_store_memory': 1429197619.0, 'node:127.0.0.1': 1.0, 'accelerator_type:G': 1.0, 'CPU': 4.0}
+[2024-06-04 17:16:19,604][flwr][INFO] - Optimize your simulation with Flower VCE: https://flower.ai/docs/framework/how-to-run-simulations.html
+[2024-06-04 17:16:19,620][flwr][INFO] - Flower VCE: Resources for each Virtual Client: {'num_cpus': 2, 'num_gpus': 1.0}
+[2024-06-04 17:16:19,649][flwr][INFO] - Flower VCE: Creating VirtualClientEngineActorPool with 1 actors
+[2024-06-04 17:16:19,651][flwr][INFO] - [INIT]
+[2024-06-04 17:16:19,652][flwr][INFO] - Requesting initial parameters from one random client
+[2024-06-04 17:16:25,358][flwr][INFO] - Received initial parameters from one random client
+[2024-06-04 17:16:25,358][flwr][INFO] - Evaluating initial global parameters
+[2024-06-04 17:16:28,103][flwr][INFO] - initial parameters (loss, other metrics): 182.013343334198, {'accuracy': 0.0932}
+[2024-06-04 17:16:28,103][flwr][INFO] - 
+[2024-06-04 17:16:28,103][flwr][INFO] - [ROUND 1]
+[2024-06-04 17:16:28,103][flwr][INFO] - configure_fit: strategy sampled 10 clients (out of 100)
+[2024-06-04 17:17:38,144][flwr][INFO] - aggregate_fit: received 10 results and 0 failures
+[2024-06-04 17:17:38,198][flwr][WARNING] - No fit_metrics_aggregation_fn provided
+[2024-06-04 17:17:42,328][flwr][INFO] - fit progress: (1, 178.50124382972717, {'accuracy': 0.2675}, 74.2271123)
+[2024-06-04 17:17:42,328][flwr][INFO] - configure_evaluate: strategy sampled 10 clients (out of 100)
+[2024-06-04 17:18:52,134][flwr][INFO] - aggregate_evaluate: received 10 results and 0 failures
+[2024-06-04 17:18:52,134][flwr][WARNING] - No evaluate_metrics_aggregation_fn provided
+[2024-06-04 17:18:52,134][flwr][INFO] - 
+[2024-06-04 17:18:52,134][flwr][INFO] - [SUMMARY]
+[2024-06-04 17:18:52,134][flwr][INFO] - Run finished 1 rounds in 144.03s
+[2024-06-04 17:18:52,134][flwr][INFO] - History (loss, distributed):
+[2024-06-04 17:18:52,134][flwr][INFO] - 	'\tround 1: 6.778967332839966\n'History (loss, centralized):
+[2024-06-04 17:18:52,134][flwr][INFO] - 	'\tround 0: 182.013343334198\n\tround 1: 178.50124382972717\n'History (metrics, centralized):
+[2024-06-04 17:18:52,134][flwr][INFO] - 	{'accuracy': [(0, 0.0932), (1, 0.2675)]}
+[2024-06-04 17:18:52,147][flwr][INFO] - 
