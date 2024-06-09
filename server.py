@@ -2,7 +2,8 @@ from collections import OrderedDict
 from hydra.utils import instantiate
 
 from omegaconf import DictConfig
-
+from test import test_server
+from train import TrainTestPipe
 import torch
 
 from model import test
@@ -41,9 +42,27 @@ def get_evaluate_fn(model_cfg, testloader):
         # this function takes these parameters and evaluates the global model
         # on a evaluation / test dataset.
 
-        model = instantiate(model_cfg)
+        #model = instantiate(model_cfg)
+
 
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+        ttp = TrainTestPipe(block_num=model_cfg.block_num,
+                                 class_num=model_cfg.class_num, 
+                                 device=device,
+                                 lr=model_cfg.lr,
+                                 momentum=model_cfg.momentum,
+                                 head_num=model_cfg.head_num,
+                                 img_dim=model_cfg.img_dim,
+                                 in_channels=model_cfg.in_channels,
+                                 mlp_dim=model_cfg.mlp_dim, 
+                                 model_path=model_cfg.model_path, 
+                                 out_channels=model_cfg.out_channels,
+                                 patch_dim=model_cfg.patch_dim, 
+                                  weight_decay=model_cfg.weight_decay)
+        
+        model = ttp.transunet.model
+
 
         params_dict = zip(model.state_dict().keys(), parameters)
         state_dict = OrderedDict({k: torch.Tensor(v) for k, v in params_dict})
@@ -53,10 +72,16 @@ def get_evaluate_fn(model_cfg, testloader):
         # realistic settings you'd only do this at the end of your FL experiment
         # you can use the `server_round` input argument to determine if this is the
         # last round. If it's not, then preferably use a global validation set.
-        loss, accuracy = test(model, testloader, device)
+        #loss, accuracy = test(model, testloader, device)
+        loss , metrics = test_server(model, testloader, device)
+
 
         # Report the loss and any other metric (inside a dictionary). In this case
         # we report the global test accuracy.
-        return loss, {"accuracy": accuracy}
+        return loss, {"IOU": metrics[0],
+                      "F1": metrics[1],
+                      "accuracy": metrics[2],
+                      "recall": metrics[3],
+                      "precision": metrics[4]}
 
     return evaluate_fn

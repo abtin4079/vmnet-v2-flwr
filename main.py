@@ -24,6 +24,9 @@ def main(cfg: DictConfig):
     print(len(trainloaders), len(trainloaders[0].dataset))
 
     ##3. Define your clients
+
+    #initialize the model for training
+    
     client_fn = generate_client_fn(trainloaders, validationloaders, cfg.model)
 
     ##4. Define your strategy
@@ -40,7 +43,7 @@ def main(cfg: DictConfig):
     #         cfg.config_fit
     #     ),  # a function to execute to obtain the configuration to send to the clients during fit()
     #     evaluate_fn=get_evaluate_fn(cfg.num_classes, testloader),
-    # ) 
+    # ) # a function to run on the server side to evaluate the global model.
 
 
     # implement with hydra config file

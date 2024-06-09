@@ -161,9 +161,9 @@ if __name__ == '__main__':
 
     md = DentalDataset('F:/UNIVERCITY/sharifian/t1/datasets/tumor_dataset/process/train',
                        transform, 'F:/UNIVERCITY/sharifian/t1/datasets/tumor_dataset/sailency/train')
-    loader = DataLoader(md, batch_size=cfg.batch_size, shuffle=True)
+    #loader = DataLoader(md, batch_size=cfg.batch_size, shuffle=True)
 
-    print(loader)
+    #print(loader)
     # for sample in md:
     #     print(sample['img'].shape)
     #     print(sample['mask'].shape)

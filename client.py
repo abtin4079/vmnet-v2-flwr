@@ -4,8 +4,7 @@ from flwr.common import NDArrays, Scalar
 
 import torch
 import flwr as fl
-
-from model import  train, test
+from train import TrainTestPipe
 from hydra.utils import instantiate
 
 class FlowerClient(fl.client.NumPyClient):
@@ -18,14 +17,34 @@ class FlowerClient(fl.client.NumPyClient):
         super().__init__()
 
         # the dataloaders that point to the data associated to this client
+        self.model_cfg = model_cfg
         self.trainloader = trainloader
         self.valloader = vallodaer
-
-        # a model that is randomly initialised at first
-        self.model = instantiate(model_cfg)
-
-        # figure out if this client has access to GPU support or not
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+        # Initializing the train test pipeline 
+        self.ttp = TrainTestPipe(block_num=model_cfg.block_num,
+                                 class_num=model_cfg.class_num, 
+                                 device=self.device,
+                                 lr=model_cfg.lr,
+                                 momentum=model_cfg.momentum,
+                                 head_num=model_cfg.head_num,
+                                 img_dim=model_cfg.img_dim,
+                                 in_channels=model_cfg.in_channels,
+                                 mlp_dim=model_cfg.mlp_dim, 
+                                 model_path=model_cfg.model_path, 
+                                 out_channels=model_cfg.out_channels,
+                                 patch_dim=model_cfg.patch_dim, 
+                                  weight_decay=model_cfg.weight_decay)
+
+        self.model = self.ttp.transunet.model
+        #self.model = instantiate(model_cfg)
+        
+        # figure out if this client has access to GPU support or not
+
+        # self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+
+
 
     def set_parameters(self, parameters):
         """Receive parameters and apply them to the local model."""
@@ -54,21 +73,31 @@ class FlowerClient(fl.client.NumPyClient):
         # powerful mechanism to adjust these hyperparameters during the FL process. For
         # example, maybe you want clients to reduce their LR after a number of FL rounds.
         # or you want clients to do more local epochs at later stages in the simulation
-        # you can control these by customising what you pass to `on_fit_config_fn` when
+        # you can control these by customizing what you pass to `on_fit_config_fn` when
         # defining your strategy.
+
+
+
         lr = config["lr"]
         momentum = config["momentum"]
+        weight_decay = config["weight_decay"]
         epochs = config["local_epochs"]
 
-        # a very standard looking optimiser
-        optim = torch.optim.SGD(self.model.parameters(), lr=lr, momentum=momentum)
+
+
+        # a very standard looking optimizer
+
+        # optim = torch.optim.SGD(self.model.parameters(), lr=lr, momentum=momentum, weight_decay=weight_decay)
 
         # do local training. This function is identical to what you might
         # have used before in non-FL projects. For more advance FL implementation
         # you might want to tweak it but overall, from a client perspective the "local
-        # training" can be seen as a form of "centralised training" given a pre-trained
+        # training" can be seen as a form of "centralized training" given a pre-trained
         # model (i.e. the model received from the server)
-        train(self.model, self.trainloader, optim, epochs, self.device)
+
+
+        self.ttp.train(train_loader=self.trainloader, test_loader=self.valloader, epoch=self.model_cfg.epochs, patience=self.model_cfg.patience)
+        #train(self.model, self.trainloader, optim, epochs, self.device)
 
         # Flower clients need to return three arguments: the updated model, the number
         # of examples in the client (although this depends a bit on your choice of aggregation
@@ -76,12 +105,12 @@ class FlowerClient(fl.client.NumPyClient):
         # are ideally small data structures)
         return self.get_parameters({}), len(self.trainloader), {}
 
-    def evaluate(self, parameters: NDArrays, config: Dict[str, Scalar]):
-        self.set_parameters(parameters)
+    # def evaluate(self, parameters: NDArrays, config: Dict[str, Scalar]):
+    #     self.set_parameters(parameters)
 
-        loss, accuracy = test(self.model, self.valloader, self.device)
+    #     loss, accuracy = test(self.model, self.valloader, self.device)
 
-        return float(loss), len(self.valloader), {"accuracy": accuracy}
+    #     return float(loss), len(self.valloader), {"accuracy": accuracy}
 
 
 def generate_client_fn(trainloaders, valloaders, model_cfg):
@@ -100,7 +129,7 @@ def generate_client_fn(trainloaders, valloaders, model_cfg):
         return FlowerClient(
             trainloader=trainloaders[int(cid)],
             vallodaer=valloaders[int(cid)],
-            model_cfg=model_cfg,
+            model_cfg=model_cfg,  
         )
 
     # return the function to spawn client

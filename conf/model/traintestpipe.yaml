@@ -1,0 +1,16 @@
+---
+_target_: train.TrainTestPipe
+img_dim: 224
+in_channels: 3
+out_channels: 128
+head_num: 4
+mlp_dim: 256
+block_num: 8
+patch_dim: 16
+class_num: 1
+lr: ${lr}
+epochs: ${local_epochs}
+patience: 3
+momentum: ${momentum}
+weight_decay: ${weight_decay}
+model_path: '/content/drive/MyDrive/kvasir/model/model_v2_sgd.pth'
