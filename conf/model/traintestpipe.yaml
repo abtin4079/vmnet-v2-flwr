@@ -8,9 +8,9 @@ mlp_dim: 256
 block_num: 8
 patch_dim: 16
 class_num: 1
-lr: ${lr}
-epochs: ${local_epochs}
+lr: 0.01
+epochs: 3
 patience: 3
-momentum: ${momentum}
-weight_decay: ${weight_decay}
+momentum: 0.9
+weight_decay: 0.0001
 model_path: '/content/drive/MyDrive/kvasir/model/model_v2_sgd.pth'

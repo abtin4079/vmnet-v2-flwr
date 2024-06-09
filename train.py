@@ -5,7 +5,7 @@ from torchvision import transforms
 from torch.utils.data import DataLoader
 import os
 # Additional Scripts
-from utils import transforms as T
+from kvasir import transforms as T
 from utils.utils import EpochCallback
 
 
