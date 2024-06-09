@@ -64,14 +64,15 @@ class EpochCallback:
         print(epoch_end_str)
 
         if self.monitor is None:
-            self.__save_model()
+        #    self.__save_model()
+            print("")
 
         elif hash[self.monitor] < self.monitor_value:
             print(f'{self.monitor} decreased from {round(self.monitor_value, 4)} to {round(hash[self.monitor], 4)}')
 
             self.not_improved_epoch = 0
             self.monitor_value = hash[self.monitor]
-            self.__save_model()
+            # self.__save_model()
         else:
             print(f'{self.monitor} did not decrease from {round(self.monitor_value, 4)}, model did not save!')
 
