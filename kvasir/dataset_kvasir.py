@@ -67,17 +67,23 @@ class DentalDataset(Dataset):
 
         img = img / 255.
         img = img.transpose((2, 0, 1))
-        img = torch.from_numpy(img.astype('float32'))
-
+        img = torch.tensor(img, dtype=torch.float32)  # Convert to tensor
         img_sail = img_sail / 255.
         img_sail = img_sail.transpose((2, 0, 1))
-        img_sail = torch.from_numpy(img_sail.astype('float32'))
-        
+        img_sail = torch.tensor(img_sail, dtype=torch.float32)  # Convert to tensor
         mask = mask / 255.
         mask = mask.transpose((2, 0, 1))
-        mask = torch.from_numpy(mask.astype('float32'))
+        mask = torch.tensor(mask, dtype=torch.float32)  # Convert to tensor
+        
 
-        return {'img': img, 'img_sail' : img_sail, 'mask': mask}
+        if torch.cuda.is_available():
+            device = torch.device("cuda")
+            img = img.to(device)
+            img_sail = img_sail.to(device)
+            mask = mask.to(device)
+        
+        return {'img': img, 'img_sail': img_sail, 'mask': mask}
+
 
     def __len__(self):
       return len(self.img_paths)
