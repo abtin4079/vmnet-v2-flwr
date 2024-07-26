@@ -113,7 +113,7 @@ def training_preprocess(config, parser, cid):
     return model, resume_model, checkpoint_dir, logger, writer
 
 
-def train(model_cfg, train_loader, val_loader, model, resume_model, checkpoint_dir, logger, writer, work_dir):
+def train_vmunet(model_cfg, train_loader, val_loader, model, resume_model, checkpoint_dir, logger, writer, work_dir):
 
     print('#----------Prepareing loss, opt, sch and amp----------#')
     criterion = instantiate(model_cfg.criterion)
@@ -129,19 +129,19 @@ def train(model_cfg, train_loader, val_loader, model, resume_model, checkpoint_d
     min_epoch = 1
 
 
-    # if os.path.exists(resume_model):
-    #     print('#----------Resume Model and Other params----------#')
-    #     checkpoint = torch.load(resume_model, map_location=torch.device('cpu'))
-    #     model.load_state_dict(checkpoint['model_state_dict'])
-    #     optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-    #     scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
-    #     saved_epoch = checkpoint['epoch']
-    #     start_epoch += saved_epoch
-    #     min_loss, min_epoch, loss = checkpoint['min_loss'], checkpoint['min_epoch'], checkpoint['loss']
+    if os.path.exists(resume_model):
+        print('#----------Resume Model and Other params----------#')
+        checkpoint = torch.load(resume_model, map_location=torch.device('cpu'))
+        model.load_state_dict(checkpoint['model_state_dict'])
+        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+        scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
+        saved_epoch = checkpoint['epoch']
+        start_epoch += saved_epoch
+        min_loss, min_epoch, loss = checkpoint['min_loss'], checkpoint['min_epoch'], checkpoint['loss']
 
-    #     log_info = f'resuming model from {resume_model}. resume_epoch: {saved_epoch}, min_loss: {min_loss:.4f}, min_epoch: {min_epoch}, loss: {loss:.4f}'
-    #     print(log_info)
-    #     logger.info(log_info)
+        log_info = f'resuming model from {resume_model}. resume_epoch: {saved_epoch}, min_loss: {min_loss:.4f}, min_epoch: {min_epoch}, loss: {loss:.4f}'
+        print(log_info)
+        logger.info(log_info)
 
 
 

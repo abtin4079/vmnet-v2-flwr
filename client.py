@@ -8,7 +8,7 @@ from train import TrainTestPipe
 from hydra.utils import instantiate
 
 
-from train_vmunet import training_preprocess
+from train_vmunet import training_preprocess, train_vmunet
 
 class FlowerClient(fl.client.NumPyClient):
     """Define a Flower Client."""
@@ -104,6 +104,16 @@ class FlowerClient(fl.client.NumPyClient):
         # training" can be seen as a form of "centralized training" given a pre-trained
         # model (i.e. the model received from the server)
 
+        train_vmunet(model_cfg=self.model_cfg,
+                     model=self.model,
+                     trainloader=self.trainloader, 
+                     valloader=self.valloader, 
+                     resume_model=self.resume_model, 
+                     checkpoint_dir=self.chechpoint_dir, 
+                     logger=self.logger, 
+                     writer=self.writer, 
+                     work_dir=self.work_dir
+                     )
 
         # self.ttp.train(train_loader=self.trainloader, test_loader=self.valloader, epoch=self.model_cfg.epochs, patience=self.model_cfg.patience)
         

@@ -6,6 +6,7 @@ from train import TrainTestPipe
 import torch
 
 from model import test
+from test_vmunet import *
 
 def get_on_fit_config(config: DictConfig):
     """Return function that prepares config to send to clients."""
@@ -29,28 +30,31 @@ def get_on_fit_config(config: DictConfig):
 
 def get_evaluate_fn(model_cfg, testloader):
     """Define function for global evaluation on the server."""
-    def evaluate_fn(server_round: int, parameters, config):
+    def evaluate_fn(server_round: int, parameters, model_cfg):
         # Determine the device to use
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-        # Initialize the model using the TrainTestPipe
-        ttp = TrainTestPipe(block_num=model_cfg.block_num,
-                            class_num=model_cfg.class_num, 
-                            device=device,
-                            lr=model_cfg.lr,
-                            momentum=model_cfg.momentum,
-                            head_num=model_cfg.head_num,
-                            img_dim=model_cfg.img_dim,
-                            in_channels=model_cfg.in_channels,
-                            mlp_dim=model_cfg.mlp_dim, 
-                            model_path=model_cfg.model_path, 
-                            out_channels=model_cfg.out_channels,
-                            patch_dim=model_cfg.patch_dim, 
-                            weight_decay=model_cfg.weight_decay)
+        # # Initialize the model using the TrainTestPipe
+        # ttp = TrainTestPipe(block_num=model_cfg.block_num,
+        #                     class_num=model_cfg.class_num, 
+        #                     device=device,
+        #                     lr=model_cfg.lr,
+        #                     momentum=model_cfg.momentum,
+        #                     head_num=model_cfg.head_num,
+        #                     img_dim=model_cfg.img_dim,
+        #                     in_channels=model_cfg.in_channels,
+        #                     mlp_dim=model_cfg.mlp_dim, 
+        #                     model_path=model_cfg.model_path, 
+        #                     out_channels=model_cfg.out_channels,
+        #                     patch_dim=model_cfg.patch_dim, 
+        #                     weight_decay=model_cfg.weight_decay)
         
-        model = ttp.transunet.model.to(device)
-        criterion = ttp.transunet.criterion
+        # model = ttp.transunet.model.to(device)
+        # criterion = ttp.transunet.criterion
 
+        model , criterion = testing_preprocess(model_cfg)
+
+############################################################################# federated learning #################################
         # Ensure that the parameters match the model's state dict keys
         try:
             params_dict = zip(model.state_dict().keys(), parameters)
@@ -66,17 +70,23 @@ def get_evaluate_fn(model_cfg, testloader):
             print(f"Error loading state_dict: {e}")
             print(f"State dictionary keys: {state_dict.keys()}")
             raise e
+##################################################################################################################################
 
         # Evaluate the model using the provided test_server function
-        loss, metrics = test_server(model,criterion ,testloader, device)
+
+        #loss, metrics = test_server(model,criterion ,testloader, device)
+
+        loss , metrics = test_vmunet(model_cfg, testloader, model, criterion)
+
 
         # Return the loss and the metrics as a dictionary
         return loss, {
-            "IOU": metrics[0],
-            "F1": metrics[1],
-            "accuracy": metrics[2],
-            "recall": metrics[3],
-            "precision": metrics[4]
+            "accuracy": metrics[0],
+            "sensitivity": metrics[1],
+            "specificity": metrics[2],
+            "f1_or_dsc": metrics[3],
+            "miou": metrics[4]
         }
 
     return evaluate_fn
+

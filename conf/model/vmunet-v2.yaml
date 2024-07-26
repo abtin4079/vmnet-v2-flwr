@@ -24,6 +24,11 @@ epochs: 300
 input_size_h: 224
 input_size_w: 224
 
+print_interval : 20
+val_interval : 1
+save_interval : 10
+threshold : 0.5
+
 criterion:
   _target_: utils_vmunet.BceDiceLoss
   wb: 1
