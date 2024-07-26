@@ -7,45 +7,54 @@ import flwr as fl
 from train import TrainTestPipe
 from hydra.utils import instantiate
 
+
+from train_vmunet import training_preprocess
+
 class FlowerClient(fl.client.NumPyClient):
     """Define a Flower Client."""
 
     def __init__(self,
                 trainloader,
                 vallodaer,
-                model_cfg) -> None:
+                model_cfg, 
+                cid) -> None:
         super().__init__()
 
         # the dataloaders that point to the data associated to this client
         self.model_cfg = model_cfg
         self.trainloader = trainloader
         self.valloader = vallodaer
+        self.cid = cid
         self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-        # Initializing the train test pipeline 
-        self.ttp = TrainTestPipe(block_num=model_cfg.block_num,
-                                 class_num=model_cfg.class_num, 
-                                 device=self.device,
-                                 lr=model_cfg.lr,
-                                 momentum=model_cfg.momentum,
-                                 head_num=model_cfg.head_num,
-                                 img_dim=model_cfg.img_dim,
-                                 in_channels=model_cfg.in_channels,
-                                 mlp_dim=model_cfg.mlp_dim, 
-                                 model_path=model_cfg.model_path, 
-                                 out_channels=model_cfg.out_channels,
-                                 patch_dim=model_cfg.patch_dim, 
-                                  weight_decay=model_cfg.weight_decay)
 
-        self.model = self.ttp.transunet.model
-        #self.model = instantiate(model_cfg)
+
+        # Initializing the train test pipeline 
+        # self.ttp = TrainTestPipe(block_num=model_cfg.block_num,
+        #                          class_num=model_cfg.class_num, 
+        #                          device=self.device,
+        #                          lr=model_cfg.lr,
+        #                          momentum=model_cfg.momentum,
+        #                          head_num=model_cfg.head_num,
+        #                          img_dim=model_cfg.img_dim,
+        #                          in_channels=model_cfg.in_channels,
+        #                          mlp_dim=model_cfg.mlp_dim, 
+        #                          model_path=model_cfg.model_path, 
+        #                          out_channels=model_cfg.out_channels,
+        #                          patch_dim=model_cfg.patch_dim, 
+        #                           weight_decay=model_cfg.weight_decay)
+
+        # self.model = self.ttp.transunet.model
+
+        #self.model = instantiate(model_cfg.model_config)
         
         # figure out if this client has access to GPU support or not
 
         # self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
+        self.model , self.resume_model, self.chechpoint_dir, self.logger, self.writer, self.work_dir = training_preprocess(config=self.model_cfg, parser=None, cid=self.cid)
+        
 
-
-
+################################################################## federated learning ##########################################################
     def set_parameters(self, parameters):
         """Receive parameters and apply them to the local model."""
         params_dict = zip(self.model.state_dict().keys(), parameters)
@@ -96,7 +105,8 @@ class FlowerClient(fl.client.NumPyClient):
         # model (i.e. the model received from the server)
 
 
-        self.ttp.train(train_loader=self.trainloader, test_loader=self.valloader, epoch=self.model_cfg.epochs, patience=self.model_cfg.patience)
+        # self.ttp.train(train_loader=self.trainloader, test_loader=self.valloader, epoch=self.model_cfg.epochs, patience=self.model_cfg.patience)
+        
         #train(self.model, self.trainloader, optim, epochs, self.device)
 
         # Flower clients need to return three arguments: the updated model, the number
@@ -112,7 +122,7 @@ class FlowerClient(fl.client.NumPyClient):
 
     #     return float(loss), len(self.valloader), {"accuracy": accuracy}
 
-
+################################################################################################################################################
 def generate_client_fn(trainloaders, valloaders, model_cfg):
     """Return a function that can be used by the VirtualClientEngine.
 
@@ -130,6 +140,7 @@ def generate_client_fn(trainloaders, valloaders, model_cfg):
             trainloader=trainloaders[int(cid)],
             vallodaer=valloaders[int(cid)],
             model_cfg=model_cfg,  
+            cid= int(cid)
         )
 
     # return the function to spawn client

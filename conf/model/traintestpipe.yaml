@@ -9,7 +9,7 @@ block_num: 8
 patch_dim: 16
 class_num: 1
 lr: 0.01
-epochs: 3
+epochs: 1
 patience: 3
 momentum: 0.9
 weight_decay: 0.0001
