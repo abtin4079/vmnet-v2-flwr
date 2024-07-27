@@ -22,7 +22,7 @@ def training_preprocess(config, parser, cid):
     print('#----------Creating logger----------#')
     os.chdir('..') #change to the parent path 
 
-    work_dir = 'drive/MyDrive/kvasir/results/' + 'vmunet-v2' + '_' + 'kvasir' + cid + '_' + datetime.now().strftime('%A_%d_%B_%Y_%Hh_%Mm_%Ss') + '/'
+    work_dir = 'drive/MyDrive/kvasir/results/' + 'vmunet-v2' + '_' + 'kvasir' + str(cid) + '_' + datetime.now().strftime('%A_%d_%B_%Y_%Hh_%Mm_%Ss') + '/'
 
 
     sys.path.append(work_dir + '/')
@@ -110,7 +110,7 @@ def training_preprocess(config, parser, cid):
 
     cal_params_flops(model, 256, logger)
 
-    return model, resume_model, checkpoint_dir, logger, writer
+    return model, resume_model, checkpoint_dir, logger, writer, work_dir    
 
 
 def train_vmunet(model_cfg, train_loader, val_loader, model, resume_model, checkpoint_dir, logger, writer, work_dir):

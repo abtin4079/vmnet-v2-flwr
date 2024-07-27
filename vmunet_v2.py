@@ -1,4 +1,4 @@
-from vmunet_v2.vmamba import VSSM
+from vmamba import VSSM
 # from vmamba import VSSM # debug use
 import torch
 from torch import nn

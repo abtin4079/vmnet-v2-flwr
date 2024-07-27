@@ -3,6 +3,8 @@ from hydra.utils import instantiate, call
 from utils_vmunet import *
 import tqdm
 from sklearn.metrics import confusion_matrix
+from omegaconf import DictConfig, OmegaConf
+
 
 def testing_preprocess(config):
     print('#----------Prepareing Model for server----------#')
@@ -23,7 +25,7 @@ def testing_preprocess(config):
 
         model.load_from()    
 
-        criterion = instantiate(model_cfg.criterion)
+        criterion = instantiate(config.criterion)
 
     else: raise Exception('network in not right!')
 

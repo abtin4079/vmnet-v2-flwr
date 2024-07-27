@@ -28,9 +28,9 @@ def get_on_fit_config(config: DictConfig):
 
     return fit_config_fn
 
-def get_evaluate_fn(model_cfg, testloader):
+def get_evaluate_fn(model_cfg: DictConfig, testloader):
     """Define function for global evaluation on the server."""
-    def evaluate_fn(server_round: int, parameters, model_cfg):
+    def evaluate_fn(server_round: int, parameters, config):
         # Determine the device to use
         device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
@@ -65,7 +65,7 @@ def get_evaluate_fn(model_cfg, testloader):
                 raise ValueError("State dictionary is empty. Ensure parameters are correctly passed.")
             
             # Load the state dict into the model
-            model.load_state_dict(state_dict, strict=True)
+            model.load_state_dict(state_dict, strict=False)
         except Exception as e:
             print(f"Error loading state_dict: {e}")
             print(f"State dictionary keys: {state_dict.keys()}")
@@ -74,7 +74,7 @@ def get_evaluate_fn(model_cfg, testloader):
 
         # Evaluate the model using the provided test_server function
 
-        #loss, metrics = test_server(model,criterion ,testloader, device)
+        loss, metrics = test_server(model,criterion ,testloader, device)
 
         loss , metrics = test_vmunet(model_cfg, testloader, model, criterion)
 
