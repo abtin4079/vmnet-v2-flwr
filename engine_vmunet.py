@@ -19,8 +19,11 @@ def train_one_epoch(train_loader,
     train model for one epoch
     '''
     # switch to train mode
+    
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
     model.train() 
- 
+    model.to(device)
     loss_list = []
 
     for iter, data in enumerate(train_loader):
@@ -57,7 +60,11 @@ def val_one_epoch(test_loader,
                     config,
                     val_data_name=None):
     # switch to evaluate mode
+
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu") 
+
     model.eval()
+    model.to(device)
     preds = []
     gts = []
     loss_list = []

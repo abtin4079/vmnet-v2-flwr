@@ -17,7 +17,7 @@ warnings.filterwarnings("ignore")
 
 import argparse
 
-def training_preprocess(config, parser, cid):
+def training_preprocess(config, cid):
     print(torch.cuda.is_available())
     print('#----------Creating logger----------#')
     os.chdir('..') #change to the parent path 
@@ -99,7 +99,7 @@ def training_preprocess(config, parser, cid):
 
         model = instantiate(model_cfg)
 
-        model.load_from()    
+        # model.load_from()    
     else: raise Exception('network in not right!')
 
     device = 'cpu:0'
@@ -113,7 +113,7 @@ def training_preprocess(config, parser, cid):
     return model, resume_model, checkpoint_dir, logger, writer, work_dir    
 
 
-def train_vmunet(model_cfg, train_loader, val_loader, model, resume_model, checkpoint_dir, logger, writer, work_dir):
+def train_vmunet(model_cfg, train_loader, val_loader, model, epochs, checkpoint_dir, logger, writer, work_dir):
 
     print('#----------Prepareing loss, opt, sch and amp----------#')
     criterion = instantiate(model_cfg.criterion)
@@ -123,31 +123,31 @@ def train_vmunet(model_cfg, train_loader, val_loader, model, resume_model, check
 
 
 
-    print('#----------Set other params----------#')
-    min_loss = 999
-    start_epoch = 1
-    min_epoch = 1
+    # print('#----------Set other params----------#')
+    # min_loss = 999
+    # start_epoch = 1
+    # min_epoch = 1
 
 
-    if os.path.exists(resume_model):
-        print('#----------Resume Model and Other params----------#')
-        checkpoint = torch.load(resume_model, map_location=torch.device('cpu'))
-        model.load_state_dict(checkpoint['model_state_dict'])
-        optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-        scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
-        saved_epoch = checkpoint['epoch']
-        start_epoch += saved_epoch
-        min_loss, min_epoch, loss = checkpoint['min_loss'], checkpoint['min_epoch'], checkpoint['loss']
+    # if os.path.exists(resume_model):
+    #     print('#----------Resume Model and Other params----------#')
+    #     checkpoint = torch.load(resume_model, map_location=torch.device('cpu'))
+    #     model.load_state_dict(checkpoint['model_state_dict'])
+    #     optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+    #     scheduler.load_state_dict(checkpoint['scheduler_state_dict'])
+    #     saved_epoch = checkpoint['epoch']
+    #     start_epoch += saved_epoch
+    #     min_loss, min_epoch, loss = checkpoint['min_loss'], checkpoint['min_epoch'], checkpoint['loss']
 
-        log_info = f'resuming model from {resume_model}. resume_epoch: {saved_epoch}, min_loss: {min_loss:.4f}, min_epoch: {min_epoch}, loss: {loss:.4f}'
-        print(log_info)
-        logger.info(log_info)
+    #     log_info = f'resuming model from {resume_model}. resume_epoch: {saved_epoch}, min_loss: {min_loss:.4f}, min_epoch: {min_epoch}, loss: {loss:.4f}'
+    #     print(log_info)
+    #     logger.info(log_info)
 
 
 
     step = 0
     print('#----------Training----------#')
-    for epoch in range(start_epoch, model_cfg.epochs + 1):
+    for epoch in range(epochs):
 
     
         torch.cuda.empty_cache()
@@ -186,36 +186,36 @@ def train_vmunet(model_cfg, train_loader, val_loader, model, resume_model, check
             min_loss = loss
             min_epoch = epoch
 
-        torch.save(
-            {
-                'epoch': epoch,
-                'min_loss': min_loss,
-                'min_epoch': min_epoch,
-                'loss': loss,
-                'model_state_dict': model.state_dict(),
-                'optimizer_state_dict': optimizer.state_dict(),
-                'scheduler_state_dict': scheduler.state_dict(),
-            }, os.path.join(checkpoint_dir, 'latest.pth')) 
+        # torch.save(
+        #     {
+        #         'epoch': epoch,
+        #         'min_loss': min_loss,
+        #         'min_epoch': min_epoch,
+        #         'loss': loss,
+        #         'model_state_dict': model.state_dict(),
+        #         'optimizer_state_dict': optimizer.state_dict(),
+        #         'scheduler_state_dict': scheduler.state_dict(),
+        #     }, os.path.join(checkpoint_dir, 'latest.pth')) 
 
-    # 测试的步骤：也要按照 Polyp 的文件夹列表
-    if os.path.exists(os.path.join(checkpoint_dir, 'best.pth')):
-        print('#----------Testing----------#')
-        best_weight = torch.load(work_dir + 'checkpoints/best.pth', map_location=torch.device('cpu'))
-        model.load_state_dict(best_weight)
-        #for name in ['CVC-300', 'CVC-ClinicDB', 'Kvasir', 'CVC-ColonDB', 'ETIS-LaribPolypDB']:
-            #val_loader_t = val_loader_dict[name]
-        loss = test_one_epoch(
-            val_loader,
-            model,
-            criterion,
-            logger,
-            model_cfg,
-            test_data_name='Kvasir'
-        )
-        os.rename(
-            os.path.join(checkpoint_dir, 'best.pth'),
-            os.path.join(checkpoint_dir, f'best-epoch{min_epoch}-loss{min_loss:.4f}.pth')
-        )      
+    # # 测试的步骤：也要按照 Polyp 的文件夹列表
+    # if os.path.exists(os.path.join(checkpoint_dir, 'best.pth')):
+    #     print('#----------Testing----------#')
+    #     best_weight = torch.load(work_dir + 'checkpoints/best.pth', map_location=torch.device('cpu'))
+    #     model.load_state_dict(best_weight)
+    #     #for name in ['CVC-300', 'CVC-ClinicDB', 'Kvasir', 'CVC-ColonDB', 'ETIS-LaribPolypDB']:
+    #         #val_loader_t = val_loader_dict[name]
+    #     loss = test_one_epoch(
+    #         val_loader,
+    #         model,
+    #         criterion,
+    #         logger,
+    #         model_cfg,
+    #         test_data_name='Kvasir'
+    #     )
+    #     os.rename(
+    #         os.path.join(checkpoint_dir, 'best.pth'),
+    #         os.path.join(checkpoint_dir, f'best-epoch{min_epoch}-loss{min_loss:.4f}.pth')
+    #     )      
 
 
 # if __name__ == '__main__':

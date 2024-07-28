@@ -51,7 +51,7 @@ class FlowerClient(fl.client.NumPyClient):
 
         # self.device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-        self.model , self.resume_model, self.chechpoint_dir, self.logger, self.writer, self.work_dir = training_preprocess(config=self.model_cfg, parser=None, cid=self.cid)
+        self.model , self.resume_model, self.chechpoint_dir, self.logger, self.writer, self.work_dir = training_preprocess(config=self.model_cfg, cid=self.cid)
         
 
 ################################################################## federated learning ##########################################################
@@ -106,6 +106,7 @@ class FlowerClient(fl.client.NumPyClient):
 
         train_vmunet(model_cfg=self.model_cfg,
                      model=self.model,
+                     epochs= 1,
                      trainloader=self.trainloader, 
                      valloader=self.valloader, 
                      resume_model=self.resume_model, 
