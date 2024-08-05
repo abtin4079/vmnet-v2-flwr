@@ -1,9 +1,11 @@
 from engine_vmunet import val_one_epoch
 from hydra.utils import instantiate, call
 from utils_vmunet import *
-import tqdm
+from tqdm import tqdm
 from sklearn.metrics import confusion_matrix
 from omegaconf import DictConfig, OmegaConf
+import torch
+import numpy as np
 
 
 def testing_preprocess(config):
@@ -23,7 +25,7 @@ def testing_preprocess(config):
 
         model = instantiate(model_cfg)
 
-        model.load_from()    
+        # model.load_from()    
 
         criterion = instantiate(config.criterion)
 
@@ -33,14 +35,17 @@ def testing_preprocess(config):
 
 
 def test_vmunet(config, test_loader, model, criterion):
+    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
     model.eval()
+    model.to(device)
     preds = []
     gts = []
     loss_list = []
     with torch.no_grad():
-        for data in tqdm(test_loader):
-            img, msk = data
-            img, msk = img.cuda(non_blocking=True).float(), msk.cuda(non_blocking=True).float()
+        for step, data in enumerate(test_loader):
+            img, mask = data['img'], data['mask']
+            img = img.to(device)
+            msk = mask.to(device)
 
             out = model(img)
                    

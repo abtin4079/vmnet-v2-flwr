@@ -16,39 +16,52 @@ def train_one_epoch(train_loader,
                     config,
                     writer):
     '''
-    train model for one epoch
+    Train the model for one epoch
     '''
-    # switch to train mode
-    
+    # Set device
     device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 
-    model.train() 
+    # Switch to train mode and move model to device
+    model.train()
     model.to(device)
+
     loss_list = []
 
-    for iter, data in enumerate(train_loader):
-        step += iter
+    for iter , data in enumerate(train_loader):
+        step += 1  # Increment step outside the loop to ensure correct counting
         optimizer.zero_grad()
-        images, targets = data
-        images, targets = images.cuda(non_blocking=True).float(), targets.cuda(non_blocking=True).float()
 
-        out = model(images)
-        loss = criterion(out, targets)
+        # Unpack data and move to device
+        img, msk = data['img'], data['mask']
+        img = img.to(device)
+        msk = msk.to(device)
 
+        # Forward pass
+        outputs = model(img)
+        loss = criterion(outputs, msk)
+
+        # Backward pass and optimize
         loss.backward()
         optimizer.step()
-        
+
+        # Record loss
         loss_list.append(loss.item())
 
+        # Log current learning rate
         now_lr = optimizer.state_dict()['param_groups'][0]['lr']
 
-        writer.add_scalar('loss', loss, global_step=step)
+        # Log loss to TensorBoard
+        writer.add_scalar('loss', loss.item(), global_step=step)
 
-        if iter % config.print_interval == 0:
-            log_info = f'train: epoch {epoch}, iter:{iter}, loss: {np.mean(loss_list):.4f}, lr: {now_lr}'
-            print(log_info)
-            logger.info(log_info)
-    scheduler.step() 
+        # Print log information
+        if step % config.print_interval == 0:
+          log_info = f'train: epoch {epoch}, iter:{step}, loss: {np.mean(loss_list):.4f}, lr: {now_lr}'
+          print(log_info)
+          logger.info(log_info)
+
+    # Step the scheduler
+    scheduler.step()
+    
     return step
 
 

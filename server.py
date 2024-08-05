@@ -74,7 +74,7 @@ def get_evaluate_fn(model_cfg: DictConfig, testloader):
 
         # Evaluate the model using the provided test_server function
 
-        loss, metrics = test_server(model,criterion ,testloader, device)
+        #loss, metrics = test_server(model,criterion ,testloader, device)
 
         loss , metrics = test_vmunet(model_cfg, testloader, model, criterion)
 

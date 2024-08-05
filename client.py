@@ -57,16 +57,22 @@ class FlowerClient(fl.client.NumPyClient):
 ################################################################## federated learning ##########################################################
     def set_parameters(self, parameters):
         """Receive parameters and apply them to the local model."""
-        params_dict = zip(self.model.state_dict().keys(), parameters)
-
-        state_dict = OrderedDict({k: torch.Tensor(v) for k, v in params_dict})
-
-        self.model.load_state_dict(state_dict, strict=True)
+        model_dict = self.model.state_dict()
+        param_dict = zip(model_dict.keys(), parameters)
+        for k, v in param_dict:
+            if model_dict[k].shape == torch.Tensor(v).shape:
+                model_dict[k] = torch.Tensor(v)
+            else:
+                print(f"Skipping parameter {k} due to shape mismatch: {torch.Tensor(v).shape} vs {model_dict[k].shape}")
+        self.model.load_state_dict(model_dict, strict=False)
 
     def get_parameters(self, config: Dict[str, Scalar]):
         """Extract model parameters and return them as a list of numpy arrays."""
+        # Filter out non-learnable parameters
+        param_shapes = [(k, v.shape) for k, v in self.model.state_dict().items() if 'total_ops' not in k and 'total_params' not in k]
+        print(f"Client parameter shapes: {param_shapes}")
+        return [val.cpu().numpy() for k, val in self.model.state_dict().items() if 'total_ops' not in k and 'total_params' not in k]
 
-        return [val.cpu().numpy() for _, val in self.model.state_dict().items()]
 
     def fit(self, parameters, config):
         """Train model received by the server (parameters) using the data.
@@ -87,10 +93,10 @@ class FlowerClient(fl.client.NumPyClient):
 
 
 
-        lr = config["lr"]
-        momentum = config["momentum"]
-        weight_decay = config["weight_decay"]
-        epochs = config["local_epochs"]
+        # lr = config["lr"]
+        # momentum = config["momentum"]
+        # weight_decay = config["weight_decay"]
+        # epochs = config["local_epochs"]
 
 
 
@@ -107,9 +113,8 @@ class FlowerClient(fl.client.NumPyClient):
         train_vmunet(model_cfg=self.model_cfg,
                      model=self.model,
                      epochs= 1,
-                     trainloader=self.trainloader, 
-                     valloader=self.valloader, 
-                     resume_model=self.resume_model, 
+                     train_loader=self.trainloader, 
+                     val_loader=self.valloader, 
                      checkpoint_dir=self.chechpoint_dir, 
                      logger=self.logger, 
                      writer=self.writer, 

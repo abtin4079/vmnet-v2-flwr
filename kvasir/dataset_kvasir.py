@@ -54,7 +54,7 @@ class DentalDataset(Dataset):
         mask = cv2.resize(mask, (self.output_size, self.output_size), interpolation=cv2.INTER_NEAREST)
         mask = np.expand_dims(mask, axis=-1)
 
-        sample = {'img': img, 'img_sail': img_sail, 'mask': mask}
+        sample = {'img': img,  'mask': mask}
         
 
         #print("Before transform:", sample)
@@ -63,14 +63,14 @@ class DentalDataset(Dataset):
         #print("After transform:", sample)
 
         
-        img, img_sail, mask = sample['img'], sample['img_sail'], sample['mask']
+        img, mask = sample['img'],  sample['mask']
 
         img = img / 255.
         img = img.transpose((2, 0, 1))
         img = torch.tensor(img, dtype=torch.float32)  # Convert to tensor
-        img_sail = img_sail / 255.
-        img_sail = img_sail.transpose((2, 0, 1))
-        img_sail = torch.tensor(img_sail, dtype=torch.float32)  # Convert to tensor
+        # img_sail = img_sail / 255.
+        # img_sail = img_sail.transpose((2, 0, 1))
+        # img_sail = torch.tensor(img_sail, dtype=torch.float32)  # Convert to tensor
         mask = mask / 255.
         mask = mask.transpose((2, 0, 1))
         mask = torch.tensor(mask, dtype=torch.float32)  # Convert to tensor
@@ -79,10 +79,10 @@ class DentalDataset(Dataset):
         if torch.cuda.is_available():
             device = torch.device("cuda")
             img = img.to(device)
-            img_sail = img_sail.to(device)
+            #img_sail = img_sail.to(device)
             mask = mask.to(device)
         
-        return {'img': img, 'img_sail': img_sail, 'mask': mask}
+        return {'img': img, 'mask': mask}
 
 
     def __len__(self):
